@@ -13,7 +13,7 @@ class SnmpTraffic:
         self._interval = interval 
 
     def _blocking_snmp_walk(self, ip):
-        result = {}
+        result = []
         iterator = nextCmd(
             SnmpEngine(),
             CommunityData(self._community),
@@ -34,7 +34,9 @@ class SnmpTraffic:
                 for varBind in varBinds:
                     current_time = datetime.now()
                     oid, value = varBind
-                    result[str(oid)] = {'traffic': str(value), 'time': current_time}
+                    ifindex = str(oid).split('.')[-2]
+                    ontindex = str(oid).split('.')[-1]
+                    result.append((ifindex, ontindex, str(value), current_time))
         return result
 
     async def snmp_walk(self, ip):
@@ -42,15 +44,16 @@ class SnmpTraffic:
         with ThreadPoolExecutor() as executor:
             return await loop.run_in_executor(executor, self._blocking_snmp_walk, ip)
 
-    async def device_task(self, ip, callback):
+    async def device_task(self, ip, db_inserter):
         while True:
             results = await self.snmp_walk(ip)
-            callback(ip, results)
+            print(results)
+            await db_inserter.insert_data(results)
             await asyncio.sleep(self._interval)
 
-    async def main(self, callback):
-        tasks = [self.device_task(ip, callback) for ip in self._devices] 
-        await asyncio.gather(*tasks)  
+    async def main(self, db_inserter):
+        tasks = [self.device_task(ip, db_inserter) for ip in self._devices]
+        await asyncio.gather(*tasks)
 
 if __name__ == "__main__":
     ...
