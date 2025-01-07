@@ -16,8 +16,8 @@ class PostgreSQLBatchInserter:
         async with self.pool.acquire() as connection:
             async with connection.transaction():
                 query = f"""
-                INSERT INTO {self.table_name} (ifindex, ontindex, capture, timecapture)
-                VALUES ($1, $2, $3, $4)
+                INSERT INTO {self.table_name} (ip, ifindex, ontindex, capture, timecapture)
+                VALUES ($1, $2, $3, $4, $5)
                 """
                 await connection.executemany(query, data)
 

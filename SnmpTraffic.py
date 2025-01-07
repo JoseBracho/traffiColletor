@@ -36,7 +36,7 @@ class SnmpTraffic:
                     oid, value = varBind
                     ifindex = str(oid).split('.')[-2]
                     ontindex = str(oid).split('.')[-1]
-                    result.append((ifindex, ontindex, str(value), current_time))
+                    result.append((ip, ifindex, ontindex, str(value), current_time))
         return result
 
     async def snmp_walk(self, ip):
@@ -47,7 +47,7 @@ class SnmpTraffic:
     async def device_task(self, ip, db_inserter):
         while True:
             results = await self.snmp_walk(ip)
-            print(results)
+            print(datetime.now(), ip)
             await db_inserter.insert_data(results)
             await asyncio.sleep(self._interval)
 
