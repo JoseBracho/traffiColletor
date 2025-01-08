@@ -47,7 +47,6 @@ class SnmpTraffic:
     async def device_task(self, ip, db_inserter):
         while True:
             results = await self.snmp_walk(ip)
-            print(datetime.now(), ip)
             await db_inserter.insert_data(results)
             await asyncio.sleep(self._interval)
 
